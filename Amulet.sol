@@ -30,7 +30,6 @@ interface IERC165 {
 
 // File @openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol@v4.0.0
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -89,7 +88,6 @@ interface IERC1155Receiver is IERC165 {
 
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.0.0
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -119,7 +117,6 @@ abstract contract ERC165 is IERC165 {
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.0.0
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -312,7 +309,6 @@ library Address {
 
 // File @openzeppelin/contracts/token/ERC1155/IERC1155.sol@v4.0.0
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -417,7 +413,6 @@ interface IERC1155 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol@v4.0.0
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -440,7 +435,6 @@ interface IERC1155MetadataURI is IERC1155 {
 
 // File contracts/IAmulet.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -534,36 +528,8 @@ interface IAmulet is IERC1155, IERC1155MetadataURI {
 }
 
 
-// File contracts/ProxyRegistryWhitelist.sol
-
-// SPDX-License-Identifier: MIT
-// Derived from OpenZeppelin's ERC721 implementation, with changes for gas-efficiency.
-
-pragma solidity ^0.8.0;
-
-contract ProxyRegistry {
-    mapping(address => address) public proxies;
-}
-
-contract ProxyRegistryWhitelist {
-    ProxyRegistry public proxyRegistry;
-
-    constructor(address proxyRegistryAddress) {
-        proxyRegistry = ProxyRegistry(proxyRegistryAddress);
-    }
-
-    function isProxyForOwner(address owner, address caller) internal view returns(bool) {
-        if(address(proxyRegistry) == address(0)) {
-            return false;
-        }
-        return proxyRegistry.proxies(owner) == caller;
-    }
-}
-
-
 // File contracts/Amulet.sol
 
-// SPDX-License-Identifier: MIT
 // Derived from OpenZeppelin's ERC721 implementation, with changes for gas-efficiency.
 
 pragma solidity ^0.8.0;
@@ -577,7 +543,7 @@ pragma solidity ^0.8.0;
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
  * {ERC721Enumerable}.
  */
-contract Amulet is IAmulet, ERC165, ProxyRegistryWhitelist {
+contract Amulet is IAmulet, ERC165 {
     using Address for address;
 
     // Mapping from token ID to token data
@@ -596,7 +562,7 @@ contract Amulet is IAmulet, ERC165, ProxyRegistryWhitelist {
     // Mapping from owner to operator approvals
     mapping (address => mapping (address => bool)) private _operatorApprovals;
 
-    constructor (address proxyRegistryAddress, MintData[] memory premineMints, MintAndRevealData[] memory premineReveals) ProxyRegistryWhitelist(proxyRegistryAddress) {
+    constructor (MintData[] memory premineMints, MintAndRevealData[] memory premineReveals) {
         mintAll(premineMints);
         mintAndRevealAll(premineReveals);
     }
@@ -701,7 +667,7 @@ contract Amulet is IAmulet, ERC165, ProxyRegistryWhitelist {
      * @dev See {IERC1155-isApprovedForAll}.
      */
     function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
-        return _operatorApprovals[account][operator] || isProxyForOwner(account, operator);
+        return _operatorApprovals[account][operator];
     }
 
     /**
@@ -806,7 +772,7 @@ contract Amulet is IAmulet, ERC165, ProxyRegistryWhitelist {
                 len = 0;
             }
         }
-        return uint32(maxlen);        
+        return uint32(maxlen);
     }
 
     /**
